@@ -34,7 +34,7 @@ namespace GM.ECSLibrary.Systems
         protected override void OnUpdate(Entity updatingEntity)
         {
             // TODO: If this proves to be too costly to call each update, try overriding OnSetCatalog() to set a SpriteBatch field, and use that instead.
-            SpriteBatch spriteBatch = ManagerCatalog.GetEntry<SpriteBatch>("SpriteBatch");
+            SpriteBatch spriteBatch = ManagerCatalog.SharedSpriteBatch;
 
             PositionComponent entityUpperLeft = updatingEntity.GetComponent<PositionComponent>();
             SpriteComponent entitySprite = updatingEntity.GetComponent<SpriteComponent>();

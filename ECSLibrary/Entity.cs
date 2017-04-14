@@ -40,6 +40,7 @@ namespace GM.ECSLibrary
             Components.Add(component.GetType(), component);
         }
 
+        // TODO: Think about removing this method. Users should probably not be given full access to the component list, AddComponent GetComponent and a new method RemoveComponent should be enough.
         /// <summary>
         /// Get the list of all components in the entity.
         /// </summary>

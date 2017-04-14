@@ -11,17 +11,11 @@ namespace GM.ECSLibrary.Systems
             _RequiredComponents.AddRange(new[] { typeof(PositionComponent), typeof(SpriteComponent), typeof(MouseEventComponent) });
         }
 
-        public override UpdateStage SystemUpdateStage
-        {
-            get
-            {
-                return UpdateStage.PreUpdate;
-            }
-        }
+        public override UpdateStage SystemUpdateStage { get => UpdateStage.PreUpdate; }
 
         protected override void OnUpdate(Entity updatingEntity)
         {
-            MouseState currentMouseState = ManagerCatalog.GetEntry<MouseState>("CurrentMouseState");
+            MouseState currentMouseState = ManagerCatalog.CurrentMouseState;
 
             PositionComponent entityPosition = updatingEntity.GetComponent<PositionComponent>();
             SpriteComponent entitySprite = updatingEntity.GetComponent<SpriteComponent>();

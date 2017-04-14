@@ -9,6 +9,7 @@ namespace GM.ECSLibrary.Systems
     /// </summary>
     public abstract class SystemBase
     {
+        // TODO: Rename ManagerCatalog? If users don't want to use a SystemsManager, the name wouldn't make any sense.
         protected Catalog ManagerCatalog { get; set; }
 
         /// <summary>
@@ -52,6 +53,7 @@ namespace GM.ECSLibrary.Systems
             OnSetCatalog();
         }
 
+        // TODO: This method may be completely useless. If I don't do anything with it for a little while longer, consider removing it.
         protected virtual void OnSetCatalog()
         {
 

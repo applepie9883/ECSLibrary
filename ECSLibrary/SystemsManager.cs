@@ -1,7 +1,9 @@
 ﻿using GM.ECSLibrary.Systems;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GM.ECSLibrary
 {
@@ -14,37 +16,39 @@ namespace GM.ECSLibrary
 
         private Dictionary<Type, SystemBase> Systems { get; set; }
         
-        public SystemsManager()
+        public SystemsManager(GraphicsDevice gDevice, SpriteBatch spriteBatch)
         {
             ManagerCatalog = new Catalog();
+            ManagerCatalog.SharedGraphicsDevice = gDevice;
+            ManagerCatalog.SharedSpriteBatch = spriteBatch;
+
             Systems = new Dictionary<Type, SystemBase>();
         }
 
         public void Update(ICollection<Entity> entityCollection)
         {
-            KeyboardState currentKeyboardState = Keyboard.GetState();
-            MouseState currentMouseState = Mouse.GetState();
+            ManagerCatalog.CurrentKeyboardState = Keyboard.GetState();
+            ManagerCatalog.CurrentMouseState = Mouse.GetState();
 
-            ManagerCatalog.SetEntry("CurrentKeyboardState", currentKeyboardState);
-            ManagerCatalog.SetEntry("CurrentMouseState", currentMouseState);
-
-            if (!ManagerCatalog.HasEntry("OldKeyboardState"))
+            if (ManagerCatalog.OldKeyboardState != null)
             {
-                ManagerCatalog.SetEntry("OldKeyboardState", currentKeyboardState);
+                ManagerCatalog.OldKeyboardState = ManagerCatalog.CurrentKeyboardState;
             }
 
-            if (!ManagerCatalog.HasEntry("OldMouseState"))
+            if (ManagerCatalog.OldMouseState != null)
             {
-                ManagerCatalog.SetEntry("OldMouseState", currentMouseState);
+                ManagerCatalog.OldMouseState = ManagerCatalog.OldMouseState;
             }
 
             if (entityCollection.Count > 0)
             {
                 for (UpdateStage currentStage = UpdateStage.PreUpdate; currentStage <= UpdateStage.PostUpdate; currentStage++)
                 {
-                    foreach (SystemBase entitySystem in Systems.Values)
+                    List<SystemBase> compatibleSystems = Systems.Values.Where(i => i.SystemUpdateStage == currentStage).ToList();
+
+                    if (compatibleSystems.Count > 0)
                     {
-                        if (entitySystem.SystemUpdateStage == currentStage)
+                        foreach (SystemBase entitySystem in compatibleSystems)
                         {
                             foreach (Entity currentEntity in entityCollection)
                             {
@@ -55,8 +59,8 @@ namespace GM.ECSLibrary
                 }
             }
 
-            ManagerCatalog.SetEntry("OldKeyboardState", currentKeyboardState);
-            ManagerCatalog.SetEntry("OldMouseState", currentMouseState);
+            ManagerCatalog.OldKeyboardState = ManagerCatalog.CurrentKeyboardState;
+            ManagerCatalog.OldMouseState = ManagerCatalog.CurrentMouseState;
         }
 
         public void Draw(ICollection<Entity> entityCollection)
@@ -65,20 +69,22 @@ namespace GM.ECSLibrary
 
             for (UpdateStage currentStage = UpdateStage.PreDraw; currentStage <= UpdateStage.PostDraw; currentStage++)
             {
-                ManagerCatalog.GetEntry<Microsoft.Xna.Framework.Graphics.SpriteBatch>("SpriteBatch").Begin(Microsoft.Xna.Framework.Graphics.SpriteSortMode.FrontToBack);
+                List<SystemBase> compatibleSystems = Systems.Values.Where(i => i.SystemUpdateStage == currentStage).ToList();
 
-                foreach (SystemBase entitySystem in Systems.Values)
+                if (compatibleSystems.Count > 0)
                 {
-                    if (entitySystem.SystemUpdateStage == currentStage)
+                    ManagerCatalog.SharedSpriteBatch.Begin(SpriteSortMode.FrontToBack);
+
+                    foreach (SystemBase entitySystem in compatibleSystems)
                     {
                         foreach (Entity currentEntity in entityCollection)
                         {
                             entitySystem.Update(currentEntity);
                         }
                     }
-                }
 
-                ManagerCatalog.GetEntry<Microsoft.Xna.Framework.Graphics.SpriteBatch>("SpriteBatch").End();
+                    ManagerCatalog.SharedSpriteBatch.End();
+                }
             }
         }
 
@@ -113,6 +119,7 @@ namespace GM.ECSLibrary
 
         public T GetSystem<T>() where T : SystemBase
         {
+            // TODO: Should I return null, or let it throw an error?
             if (!Systems.ContainsKey(typeof(T))) return null;
 
             return (T)Systems[typeof(T)];
