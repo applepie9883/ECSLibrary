@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Linq;
 
 namespace GM.ECSLibrary.Components
 {
@@ -44,7 +45,7 @@ namespace GM.ECSLibrary.Components
         /// <summary>
         /// The color to draw on any of the white parts of the sprite.
         /// </summary>
-        public Color SpriteColor { get; set; }
+        public Color Color { get; set; }
 
         /// <summary>
         /// Default constructor, initializes all properties to default values. This does not generate a texture for the sprite.
@@ -56,7 +57,15 @@ namespace GM.ECSLibrary.Components
             RotationAngle = 0;
             LayerDepth = 0;
             Transparency = 1;
-            SpriteColor = Color.White;
+            Color = Color.White;
+        }
+
+        public void GenerateTexture(GraphicsDevice gDevice, int width, int height, Color textureColor)
+        {
+            Texture2D newTexture = new Texture2D(gDevice, width, height, false, SurfaceFormat.Color);
+            newTexture.SetData(Enumerable.Range(0, width * height).Select(e => textureColor).ToArray());
+            Texture = newTexture;
+
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using GM.ECSLibrary.Systems;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -16,26 +17,25 @@ namespace GM.ECSLibrary
 
         private Dictionary<Type, SystemBase> Systems { get; set; }
         
-        public SystemsManager(GraphicsDevice gDevice, SpriteBatch spriteBatch)
+        public SystemsManager()
         {
             ManagerCatalog = new Catalog();
-            ManagerCatalog.SharedGraphicsDevice = gDevice;
-            ManagerCatalog.SharedSpriteBatch = spriteBatch;
-
             Systems = new Dictionary<Type, SystemBase>();
         }
 
-        public void Update(ICollection<Entity> entityCollection)
+        public void Update(GameTime currentGameTime, ICollection<Entity> entityCollection)
         {
+            ManagerCatalog.CurrentGameTime = currentGameTime;
+
             ManagerCatalog.CurrentKeyboardState = Keyboard.GetState();
             ManagerCatalog.CurrentMouseState = Mouse.GetState();
 
-            if (ManagerCatalog.OldKeyboardState != null)
+            if (ManagerCatalog.OldKeyboardState == null)
             {
                 ManagerCatalog.OldKeyboardState = ManagerCatalog.CurrentKeyboardState;
             }
 
-            if (ManagerCatalog.OldMouseState != null)
+            if (ManagerCatalog.OldMouseState == null)
             {
                 ManagerCatalog.OldMouseState = ManagerCatalog.OldMouseState;
             }
@@ -50,10 +50,7 @@ namespace GM.ECSLibrary
                     {
                         foreach (SystemBase entitySystem in compatibleSystems)
                         {
-                            foreach (Entity currentEntity in entityCollection)
-                            {
-                                entitySystem.Update(currentEntity);
-                            }
+                            entitySystem.Update(entityCollection);
                         }
                     }
                 }
@@ -67,8 +64,10 @@ namespace GM.ECSLibrary
         {
             if (entityCollection.Count <= 0) return;
 
+            // Iterate through all "draw" update stages.
             for (UpdateStage currentStage = UpdateStage.PreDraw; currentStage <= UpdateStage.PostDraw; currentStage++)
             {
+                // Filter the list of systems to only those with the correct update stage.
                 List<SystemBase> compatibleSystems = Systems.Values.Where(i => i.SystemUpdateStage == currentStage).ToList();
 
                 if (compatibleSystems.Count > 0)
@@ -77,10 +76,7 @@ namespace GM.ECSLibrary
 
                     foreach (SystemBase entitySystem in compatibleSystems)
                     {
-                        foreach (Entity currentEntity in entityCollection)
-                        {
-                            entitySystem.Update(currentEntity);
-                        }
+                        entitySystem.Update(entityCollection);
                     }
 
                     ManagerCatalog.SharedSpriteBatch.End();

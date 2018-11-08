@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace GM.ECSLibrary
@@ -17,41 +18,8 @@ namespace GM.ECSLibrary
 
         public MouseState OldMouseState { get; set; }
 
+        public GameTime CurrentGameTime { get; set; }
 
-
-
-
-
-        // This old code isn't compile time safe, so I replaced it with the safer (but much less flexible) code above
-        /*
-        private Dictionary<string, object> Contents { get; set; }
-
-        public Catalog()
-        {
-            Contents = new Dictionary<string, object>();
-        }
-
-        public void SetEntry(string key, object entry)
-        {
-            if (HasEntry(key))
-            {
-                Contents[key] = entry;
-            }
-            else
-            {
-                Contents.Add(key, entry);
-            }
-        }
-
-        public bool HasEntry(string key)
-        {
-            return Contents.ContainsKey(key);
-        }
-
-        public T GetEntry<T>(string key)
-        {
-            return (T)Contents[key];
-        }
-        */
+        public SpriteFont DefaultFont { get; set; }
     }
 }

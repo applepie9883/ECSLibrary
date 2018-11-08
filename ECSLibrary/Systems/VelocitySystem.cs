@@ -1,5 +1,5 @@
-﻿using System;
-using GM.ECSLibrary.Components;
+﻿using GM.ECSLibrary.Components;
+using Microsoft.Xna.Framework;
 
 namespace GM.ECSLibrary.Systems
 {
@@ -17,12 +17,19 @@ namespace GM.ECSLibrary.Systems
             }
         }
 
+        public bool OverCompinsate { get; set; }
+
+        public bool UnderCompinsate { get; set; }
+
         /// <summary>
         /// Default constructor, adds <see cref="PositionComponent"/> and <see cref="VelocityComponent"/> to the <see cref="SystemBase._RequiredComponents"/> list.
         /// </summary>
         public VelocitySystem()
         {
             _RequiredComponents.AddRange(new[] { typeof(PositionComponent), typeof(VelocityComponent) });
+
+            OverCompinsate = false;
+            UnderCompinsate = false;
         }
 
         /// <summary>
@@ -31,7 +38,19 @@ namespace GM.ECSLibrary.Systems
         /// <param name="updatingEntity">The entity to move.</param>
         protected override void OnUpdate(Entity updatingEntity)
         {
-            updatingEntity.GetComponent<PositionComponent>().Position += updatingEntity.GetComponent<VelocityComponent>().Velocity;
+            VelocityComponent entityVelocity = updatingEntity.GetComponent<VelocityComponent>();
+            PositionComponent entityPosition = updatingEntity.GetComponent<PositionComponent>();
+            double elapsedMilliseconds = ManagerCatalog.CurrentGameTime.ElapsedGameTime.TotalMilliseconds;
+
+            if ((elapsedMilliseconds < entityVelocity.MovementMilliseconds && UnderCompinsate) ||
+                (elapsedMilliseconds > entityVelocity.MovementMilliseconds && OverCompinsate))
+            {
+                entityPosition.Position += Vector2.Multiply(entityVelocity.Velocity, (float)(elapsedMilliseconds / entityVelocity.MovementMilliseconds));
+            }
+            else
+            {
+                entityPosition.Position += entityVelocity.Velocity;
+            }
         }
     }
 }

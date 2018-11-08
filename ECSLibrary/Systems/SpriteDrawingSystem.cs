@@ -1,14 +1,13 @@
 ﻿using GM.ECSLibrary.Components;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System.Linq;
 
 namespace GM.ECSLibrary.Systems
 {
     /// <summary>
     /// System that uses position and a sprite to draw entities. Requires <see cref="PositionComponent"/> and <see cref="SpriteComponent"/>.
     /// </summary>
-    public class DrawingSystem : SystemBase
+    public class SpriteDrawingSystem : SystemBase
     {
         /// <inheritdoc />
         public override UpdateStage SystemUpdateStage
@@ -22,7 +21,7 @@ namespace GM.ECSLibrary.Systems
         /// <summary>
         /// Default constructor, adds <see cref="PositionComponent"/> and <see cref="SpriteComponent"/> to the <see cref="SystemBase._RequiredComponents"/> list.
         /// </summary>
-        public DrawingSystem()
+        public SpriteDrawingSystem()
         {
             _RequiredComponents.AddRange(new[] { typeof(PositionComponent), typeof(SpriteComponent) });
         }
@@ -39,7 +38,7 @@ namespace GM.ECSLibrary.Systems
             PositionComponent entityUpperLeft = updatingEntity.GetComponent<PositionComponent>();
             SpriteComponent entitySprite = updatingEntity.GetComponent<SpriteComponent>();
 
-            spriteBatch.Draw(entitySprite.Texture, entityUpperLeft.UpperLeft, null, entitySprite.SpriteColor * entitySprite.Transparency,
+            spriteBatch.Draw(entitySprite.Texture, entityUpperLeft.UpperLeft, null, entitySprite.Color * entitySprite.Transparency,
                                    -MathHelper.ToRadians((float)entitySprite.RotationAngle), entitySprite.Origin / entitySprite.Scale, entitySprite.Scale,
                                    SpriteEffects.None, entitySprite.LayerDepth);
         }

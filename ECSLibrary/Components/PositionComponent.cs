@@ -4,36 +4,12 @@ namespace GM.ECSLibrary.Components
 {
     public class PositionComponent : ComponentBase
     {
-        private Vector2 _UpperLeft;
-
-        public Vector2 UpperLeft
-        {
-            get
-            {
-                return _UpperLeft;
-            }
-            set
-            {
-                _UpperLeft = value;
-            }
-        }
-
-        private Vector2 _PositionOffset;
+        public Vector2 UpperLeft { get; set; }
 
         /// <summary>
         /// Used to set the offset of Position from UpperLeft.
         /// </summary>
-        public Vector2 PositionOffset
-        {
-            get
-            {
-                return _PositionOffset;
-            }
-            set
-            {
-                _PositionOffset = value;
-            }
-        }
+        public Vector2 PositionOffset { get; set; }
 
         public Vector2 Position
         {

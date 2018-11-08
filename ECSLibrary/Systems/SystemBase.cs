@@ -1,11 +1,12 @@
 ﻿using GM.ECSLibrary.Components;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GM.ECSLibrary.Systems
 {
     /// <summary>
-    /// The abstract base class that every system must inherit from.
+    /// The abstract base class that every system must inherit from. It is reccomended to use a <see cref="SystemsManager"/> for all systems.
     /// </summary>
     public abstract class SystemBase
     {
@@ -82,6 +83,18 @@ namespace GM.ECSLibrary.Systems
         }
 
         /// <summary>
+        /// Update method for the system. Calls <see cref="Update(Entity)"/> for every entity in the collection.
+        /// </summary>
+        /// <param name="updatingEntities">The entities for the system to run on.</param>
+        public void Update(ICollection<Entity> updatingEntities)
+        {
+            foreach (Entity currentEntity in updatingEntities)
+            {
+                Update(currentEntity);
+            }
+        }
+
+        /// <summary>
         /// Called after the entity is verified to have all of the correct components by the public <see cref="Update(Entity)"/> method
         /// </summary>
         /// <param name="updatingEntity">The entity for the system to run on.</param>
@@ -94,19 +107,40 @@ namespace GM.ECSLibrary.Systems
         /// <returns>true if the entity has the required components, false otherwise.</returns>
         protected bool HasRequiredComponents(Entity checkingEntity)
         {
-            Dictionary<Type, ComponentBase> entityComponents = checkingEntity.GetComponents();
-
-            foreach (Type componentType in RequiredComponents)
+            if (checkingEntity.BlacklistSystems.Contains(GetType()) || (checkingEntity.WhitelistSystems.Count > 0 && !checkingEntity.WhitelistSystems.Contains(GetType())))
             {
-                // If the entity doesn't contain any one of the components, return false.
-                if (!entityComponents.ContainsKey(componentType))
-                {
-                    return false;
-                }
+                return false;
             }
 
-            // All components passed, so return true.
-            return true;
+            // If the entity has already been verified to have the correct components for this system, return true.
+            if (checkingEntity.UnverifiedSystems.Contains(GetType()))
+            {
+                return false;
+            }
+            else if (checkingEntity.VerifiedSystems.Contains(GetType()))
+            {
+                return true;
+            }
+            else
+            {
+                // If the system isn't in either list, check all components of the entity to determine if it has the required components.
+
+                Dictionary<Type, ComponentBase> entityComponents = checkingEntity.GetComponents();
+
+                foreach (Type componentType in RequiredComponents)
+                {
+                    // If the entity doesn't contain any one of the components, return false.
+                    if (!entityComponents.ContainsKey(componentType))
+                    {
+                        checkingEntity.UnverifiedSystems.Add(GetType());
+                        return false;
+                    }
+                }
+
+                // All components passed, so return true.
+                checkingEntity.VerifiedSystems.Add(GetType());
+                return true;
+            }
         }
 
         /// <summary>

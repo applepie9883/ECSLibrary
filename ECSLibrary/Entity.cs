@@ -19,6 +19,18 @@ namespace GM.ECSLibrary
         /// </summary>
         private Dictionary<Type, ComponentBase> Components { get; set; }
 
+        // TODO: When I add a remove component method, I will have to remember to clear this list every time it is called.
+        // TODO: Do I really want to remove components ever though? I think entities should never lose their components
+        public HashSet<Type> VerifiedSystems { get; set; }
+
+        public HashSet<Type> UnverifiedSystems { get; set; }
+
+        // These are the only systems allowed to run on the entity (note that component checking is still done)
+        public HashSet<Type> WhitelistSystems { get; set; }
+
+        // These are the systems that are not allowed run on the entity whether they have the required components or not
+        public HashSet<Type> BlacklistSystems { get; set; }
+
         /// <summary>
         /// Default constructor, initializes the <see cref="Components"/> dictionary.
         /// </summary>
@@ -27,6 +39,11 @@ namespace GM.ECSLibrary
             Id = Guid.NewGuid().ToString();
 
             Components = new Dictionary<Type, ComponentBase>();
+
+            VerifiedSystems = new HashSet<Type>();
+            UnverifiedSystems = new HashSet<Type>();
+            WhitelistSystems = new HashSet<Type>();
+            BlacklistSystems = new HashSet<Type>();
         }
 
         /// <summary>
@@ -38,16 +55,7 @@ namespace GM.ECSLibrary
         {
             // TODO: Don't add if there is already another of the same component. Throw an error, or just don't do it, I don't know.
             Components.Add(component.GetType(), component);
-        }
-
-        // TODO: Think about removing this method. Users should probably not be given full access to the component list, AddComponent GetComponent and a new method RemoveComponent should be enough.
-        /// <summary>
-        /// Get the list of all components in the entity.
-        /// </summary>
-        /// <returns>The dictionary of components in the entity.</returns>
-        public Dictionary<Type, ComponentBase> GetComponents()
-        {
-            return Components;
+            UnverifiedSystems.Clear();
         }
 
         /// <summary>
@@ -60,6 +68,17 @@ namespace GM.ECSLibrary
             if (!Components.ContainsKey(typeof(T))) return null;
 
             return (T)Components[typeof(T)];
+        }
+
+        // TODO: Think about removing this method. Users should probably not be given full access to the component list, AddComponent and GetComponent should be enough.
+        // TODO: So, make this use the same kind of thing systembase does, with a read only dict and all that.
+        /// <summary>
+        /// Get the list of all components in the entity.
+        /// </summary>
+        /// <returns>The dictionary of components in the entity.</returns>
+        public Dictionary<Type, ComponentBase> GetComponents()
+        {
+            return Components;
         }
     }
 }
